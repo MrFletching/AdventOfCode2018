@@ -1,11 +1,8 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define MAX_LINE_LENGTH 50
 #define FABRIC_SIZE 1000
-
-// const char *line = "#20 @ 295,560: 20x15";
 
 typedef struct {
     int id;
@@ -67,4 +64,6 @@ int main() {
     fclose(fp);
     
     printf("Overlapping: %d\n", overlapping);
+    
+    return 0;
 }
