@@ -6,6 +6,7 @@
 #define TRACE_COUNT 1500
 #define TIMESTAMP_SIZE 16
 #define SLEEP_LOG_SIZE 1000
+#define GUARD_SIZE 100
 
 typedef char timestamp[TIMESTAMP_SIZE+1];
 
@@ -29,6 +30,12 @@ typedef struct {
     int wakeUpAt;
     int minutesAsleep;
 } sleepLog;
+
+typedef struct {
+    int guardId;
+    sleepLog sleepLog[SLEEP_LOG_SIZE];
+    int sleepLogSize;
+} guard;
 
 trace parseLogLine(const char logLine[LINE_LENGTH_MAX]) {
     
@@ -93,6 +100,16 @@ int compareTracepoints(const void *a, const void *b) {
     return strcmp(traceA->ts, traceB->ts);
 }
 
+guard* findGuard(guard *guards, int guardCount, int guardId) {
+    for(int i = 0; i < guardCount; i++) {
+        if(guards[i].guardId == guardId) {
+            return &guards[i];
+        }
+    }
+    
+    return NULL;
+}
+
 int main() {
     trace tracepoints[TRACE_COUNT];
     
@@ -120,9 +137,83 @@ int main() {
         }
     }
     
+    int guardCount = 0;
+    guard guards[GUARD_SIZE];
+    
     for(int i = 0; i < sleepLogCount; i++) {
-        printf("Guard #%d was asleep for %d minutes\n", sl[i].guardId, sl[i].minutesAsleep);
+        // printf("Guard #%d was asleep for %d minutes\n", sl[i].guardId, sl[i].minutesAsleep);
+        
+        // Look for the guard in existing guards
+        guard *g;
+        g = findGuard(guards, guardCount, sl[i].guardId);
+        
+        if(g == NULL) {
+            // Guard not found, create a new guard
+            g = &guards[guardCount];
+            g->guardId = sl[i].guardId;
+            g->sleepLogSize = 0;
+            guardCount++;
+        }
+        
+        g->sleepLog[g->sleepLogSize] = sl[i];
+        g->sleepLogSize++;
     }
+    
+    int maxTimeAsleep = -1;
+    int guardWithMaxTime = -1;
+    
+    for(int i = 0; i < guardCount; i++) {
+        guard *g;
+        g = &guards[i];
+        
+        int sumTimeAsleep = 0;
+        
+        for(int i = 0; i < g->sleepLogSize; i++) {
+            sleepLog *sl;
+            sl = &(g->sleepLog[i]);
+            
+            //printf("- Fell asleep for %d minutes (%d->%d)\n", sl->minutesAsleep, sl->fellAsleepAt, sl->wakeUpAt);
+            sumTimeAsleep += sl->minutesAsleep;
+        }
+        
+        // printf("Guard #%d fell asleep for %d minutes\n", g->guardId, sumTimeAsleep);
+        
+        if(sumTimeAsleep > maxTimeAsleep) {
+            maxTimeAsleep = sumTimeAsleep;
+            guardWithMaxTime = g->guardId;
+        }
+    }
+    
+    printf("Guard with max time asleep = #%d\n", guardWithMaxTime);
+    
+    // Find out the minute that was slept the most
+    guard *g;
+    g = findGuard(guards, guardCount, guardWithMaxTime);
+    
+    int minutes[60] = {0};
+    
+    for(int i = 0; i < g->sleepLogSize; i++) {
+        sleepLog *sl;
+        sl = &(g->sleepLog[i]);
+        
+        for(int m = sl->fellAsleepAt; m < sl->wakeUpAt; m++) {
+            minutes[m]++;
+        }
+    }
+    
+    int maxTimesAsleep = -1;
+    int minuteWithMaxTimesAsleep = -1;
+    
+    for(int m = 0; m < 60; m++) {
+        if(minutes[m] > maxTimesAsleep) {
+            maxTimesAsleep = minutes[m];
+            minuteWithMaxTimesAsleep = m;
+        }
+    }
+    
+    printf("Minute with max time asleep = %d\n", minuteWithMaxTimesAsleep);
+    
+    printf("%d * %d = %d\n", guardWithMaxTime, minuteWithMaxTimesAsleep, guardWithMaxTime * minuteWithMaxTimesAsleep);
     
     return 0;
 }
