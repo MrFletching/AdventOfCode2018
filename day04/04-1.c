@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define LINE_LENGTH_MAX 100
 #define TRACE_COUNT 1500
@@ -79,11 +80,18 @@ void printTracepoint(trace tracepoint) {
     }
 }
 
+int compareTracepoints(const void *a, const void *b) {
+    const trace *traceA = (const trace*)a;
+    const trace *traceB = (const trace*)b;
+    return strcmp(traceA->ts, traceB->ts);
+}
+
 int main() {
-    
     trace tracepoints[TRACE_COUNT];
     
     int tracePointsCount = readLog(tracepoints);
+    
+    qsort(tracepoints, tracePointsCount, sizeof(tracepoints[0]), compareTracepoints);
     
     for(int i = 0; i < tracePointsCount; i++) {
         printTracepoint(tracepoints[i]);
