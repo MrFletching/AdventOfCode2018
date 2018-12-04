@@ -5,6 +5,7 @@
 #define LINE_LENGTH_MAX 100
 #define TRACE_COUNT 1500
 #define TIMESTAMP_SIZE 16
+#define SLEEP_LOG_SIZE 1000
 
 typedef char timestamp[TIMESTAMP_SIZE+1];
 
@@ -22,6 +23,12 @@ typedef struct {
     int minutes;
 } trace;
 
+typedef struct {
+    int guardId;
+    int fellAsleepAt;
+    int wakeUpAt;
+    int minutesAsleep;
+} sleepLog;
 
 trace parseLogLine(const char logLine[LINE_LENGTH_MAX]) {
     
@@ -93,8 +100,28 @@ int main() {
     
     qsort(tracepoints, tracePointsCount, sizeof(tracepoints[0]), compareTracepoints);
     
+    sleepLog sl[SLEEP_LOG_SIZE];
+    int sleepLogCount = 0;
+    int currentGuard = -1;
+    
     for(int i = 0; i < tracePointsCount; i++) {
-        printTracepoint(tracepoints[i]);
+        trace currentTrace = tracepoints[i];
+        
+        if(currentTrace.event == EVENT_BEGIN_SHIFT) {
+            currentGuard = currentTrace.guardId;
+            sl[sleepLogCount].guardId = currentGuard;
+        } else if(currentTrace.event == EVENT_FALL_ASLEEP) {
+            sl[sleepLogCount].fellAsleepAt = currentTrace.minutes;
+        } else if(currentTrace.event == EVENT_WAKE_UP) {
+            sl[sleepLogCount].wakeUpAt = currentTrace.minutes;
+            sl[sleepLogCount].minutesAsleep = sl[sleepLogCount].wakeUpAt - sl[sleepLogCount].fellAsleepAt;
+            sleepLogCount++;
+            sl[sleepLogCount].guardId = currentGuard;
+        }
+    }
+    
+    for(int i = 0; i < sleepLogCount; i++) {
+        printf("Guard #%d was asleep for %d minutes\n", sl[i].guardId, sl[i].minutesAsleep);
     }
     
     return 0;
