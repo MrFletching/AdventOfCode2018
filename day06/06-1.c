@@ -6,10 +6,31 @@
 #define INVALID_COORDINATE_INDEX -1
 #define INFINATE_AREA -1
 
-int main() {
-    // Read coordinates into array
-    int coordinates[COORDINATES_COUNT][2];
+int manhattenDistance(int point1[2], int point2[2]) {
+    return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1]);
+}
+
+int indexOfClosestCoordinate(int point[2], int coordinates[COORDINATES_COUNT][2]) {
+    int minDistance = INT_MAX;
+    int closestCoordinateIndex = INVALID_COORDINATE_INDEX;
     
+    for(int i = 0; i < COORDINATES_COUNT; i++) {
+        int *coordinate = coordinates[i];
+        
+        int distance = manhattenDistance(point, coordinate);
+        
+        if(distance < minDistance) {
+            minDistance = distance;
+            closestCoordinateIndex = i;
+        } else if(distance == minDistance) {
+            closestCoordinateIndex = INVALID_COORDINATE_INDEX;
+        }
+    }
+    
+    return closestCoordinateIndex;
+}
+
+void readCoordinates(int coordinates[COORDINATES_COUNT][2]) {
     FILE *fp;
     fp = fopen("input.txt", "r");
     
@@ -23,6 +44,24 @@ int main() {
     }
     
     fclose(fp);
+}
+
+int maxInArray(int array[], int arraySize) {
+    int max = INT_MIN;
+    
+    for(int i = 0; i < arraySize; i++) {
+        if(array[i] > max) {
+            max = array[i];
+        }
+    }
+    
+    return max;
+}
+
+int main() {
+    // Read coordinates into array
+    int coordinates[COORDINATES_COUNT][2];
+    readCoordinates(coordinates);
     
     
     int minX = INT_MAX;
@@ -55,24 +94,8 @@ int main() {
     
     for(int y = minY; y <= maxY; y++) {
         for(int x = minX; x <= maxX; x++) {
-            
-            int minDistance = INT_MAX;
-            int closestCoordinateIndex = INVALID_COORDINATE_INDEX;
-            
-            // Find closest coordinate to this cell
-            for(int i = 0; i < COORDINATES_COUNT; i++) {
-                int *coordinate = coordinates[i];
-                
-                int distance = abs(coordinate[0] - x) + abs(coordinate[1] - y);
-                
-                if(distance < minDistance) {
-                    minDistance = distance;
-                    closestCoordinateIndex = i;
-                } else if(distance == minDistance) {
-                    closestCoordinateIndex = INVALID_COORDINATE_INDEX;
-                }
-                
-            }
+            int point[2] = {x, y};
+            int closestCoordinateIndex = indexOfClosestCoordinate(point, coordinates);
             
             if(closestCoordinateIndex != INVALID_COORDINATE_INDEX) {
                 
@@ -86,13 +109,7 @@ int main() {
         }
     }
     
-    int maxArea = 0;
-    
-    for(int i = 0; i < COORDINATES_COUNT; i++) {
-        if(area[i] > maxArea) {
-            maxArea = area[i];
-        }
-    }
+    int maxArea = maxInArray(area, COORDINATES_COUNT);
     
     printf("Max Area: %d\n", maxArea);
     
