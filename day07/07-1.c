@@ -55,6 +55,24 @@ void readInstructions(uint32_t *steps, uint32_t dependencies[26]) {
     fclose(fp);
 }
 
+char getNextStep(uint32_t steps, uint32_t doneSteps, uint32_t dependencies[26]) {
+    char nextStep = 'Z';
+    
+    for(char step = 'A'; step <= 'Z'; step++) {
+        if(!isStep(steps, step) || isStepDone(doneSteps, step)) {
+            continue;
+        }
+        
+        if(doesStepMeetDependencies(dependencies, doneSteps, step)) {
+            if(step < nextStep) {
+                nextStep = step;
+            }
+        }
+    }
+    
+    return nextStep;
+}
+
 int main() {
     
     uint32_t steps = 0;
@@ -67,19 +85,7 @@ int main() {
     printf("Step Sequence: ");
     
     do {
-        char nextStep = 'Z';
-        
-        for(char step = 'A'; step <= 'Z'; step++) {
-            if(!isStep(steps, step) || isStepDone(doneSteps, step)) {
-                continue;
-            }
-            
-            if(doesStepMeetDependencies(dependencies, doneSteps, step)) {
-                if(step < nextStep) {
-                    nextStep = step;
-                }
-            }
-        }
+        char nextStep = getNextStep(steps, doneSteps, dependencies);
         
         doStep(&doneSteps, nextStep);
         printf("%c", nextStep);
