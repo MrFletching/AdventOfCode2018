@@ -62,21 +62,6 @@ int main() {
     
     readInstructions(&steps, dependencies);
     
-    // addStep(&steps, 'A');
-    // addStep(&steps, 'B');
-    // addStep(&steps, 'C');
-    // addStep(&steps, 'D');
-    // addStep(&steps, 'E');
-    // addStep(&steps, 'F');
-    // 
-    // addDependency(dependencies, 'A', 'C');
-    // addDependency(dependencies, 'F', 'C');
-    // addDependency(dependencies, 'B', 'A');
-    // addDependency(dependencies, 'D', 'A');
-    // addDependency(dependencies, 'E', 'B');
-    // addDependency(dependencies, 'E', 'D');
-    // addDependency(dependencies, 'E', 'F');
-    
     uint32_t doneSteps = 0;
     
     printf("Step Sequence: ");
