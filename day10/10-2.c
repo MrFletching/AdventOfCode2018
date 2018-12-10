@@ -144,7 +144,7 @@ int main() {
         contracting = areBoundsContracting(bounds_prev, bounds);
         
         if(contracting && (bounds.xMax - bounds.xMin + 1) < 100) {
-            // printf("Time: %d\n", time); 
+            printf("Time: %d\n", time); 
             print_points(points, points_count, bounds);
             printf("\n");
         }
