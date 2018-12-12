@@ -29,9 +29,10 @@ int main() {
     }
     
     
-    int maxSum = 0;
-    int maxX = 0;
-    int maxY = 0;
+    int max_sum = 0;
+    int max_x = 0;
+    int max_y = 0;
+    int square_size = 3;
     
     // Loop through each 3x3 square
     for(int y = 1; y <= GRID_SIZE - 2; y++) {
@@ -46,16 +47,16 @@ int main() {
                 }
             }
             
-            if(sum > maxSum) {
-                maxSum = sum;
-                maxX = x;
-                maxY = y;
+            if(sum > max_sum) {
+                max_sum = sum;
+                max_x = x;
+                max_y = y;
             }
             
         }
     }
     
-    printf("Max square: (%d,%d)\n", maxX, maxY);
+    printf("Max square: (%d,%d)\n", max_x, max_y);
     
     return 0;
 }
