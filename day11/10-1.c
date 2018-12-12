@@ -32,7 +32,6 @@ int main() {
     int max_sum = 0;
     int max_x = 0;
     int max_y = 0;
-    int square_size = 3;
     
     // Loop through each 3x3 square
     for(int y = 1; y <= GRID_SIZE - 2; y++) {
