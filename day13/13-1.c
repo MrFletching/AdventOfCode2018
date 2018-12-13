@@ -206,6 +206,18 @@ void tick_world(World *world) {
             cart->x++;
         }
         
+        // Check if the new position crashed with any carts
+        for(int j = 0; j < world->carts_count; j++) {
+            Cart *other_cart = &world->carts[j];
+            
+            if(other_cart != cart && cart->x == other_cart->x && cart->y == other_cart->y) {
+                world->crashed = true;
+                world->crash_x = cart->x;
+                world->crash_y = cart->y;
+            }
+        }
+        
+        
         Track track_under_cart = world->map[cart->y][cart->x];
         
         if(track_under_cart == TRACK_UP_RIGHT) {
@@ -260,21 +272,6 @@ void tick_world(World *world) {
             }
             
             cart->intersection_state = (cart->intersection_state + 1) % 3;
-        }
-    }
-    
-    // Check if any carts crashed
-    for(int i = 1; i < world->carts_count; i++) {
-        Cart *cart_i = &world->carts[i];
-        
-        for(int j = 0; j < i; j++) {
-            Cart *cart_j = &world->carts[j];
-            
-            if(cart_i->x == cart_j->x && cart_i->y == cart_j->y) {
-                world->crashed = true;
-                world->crash_x = cart_i->x;
-                world->crash_y = cart_i->y;
-            }
         }
     }
 }
