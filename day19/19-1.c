@@ -67,7 +67,7 @@ void init_program(Program *p) {
     p->ip_reg = 0;
     
     for(int i = 0; i < REGISTER_COUNT; i++) {
-        p->registers[0] = 0;
+        p->registers[i] = 0;
     }
     
     p->instruction_count = 0;
