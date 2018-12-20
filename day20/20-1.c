@@ -19,7 +19,7 @@ typedef struct {
 } Grid;
 
 typedef struct {
-    int coords[STACK_SIZE][2];
+    int coords[STACK_SIZE][3];
     int size;
 } VectorStack;
 
@@ -168,23 +168,131 @@ void vector_stack_init(VectorStack *stack) {
     stack->size = 0;
 }
 
-void vector_stack_push(VectorStack *stack, int x, int y) {
+void vector_stack_push2(VectorStack *stack, int x, int y) {
     stack->coords[stack->size][0] = x;
     stack->coords[stack->size][1] = y;
     
     stack->size++;
 }
 
-void vector_stack_pop(VectorStack *stack, int *x, int *y) {
+void vector_stack_pop2(VectorStack *stack, int *x, int *y) {
     *x = stack->coords[stack->size - 1][0];
     *y = stack->coords[stack->size - 1][1];
     
     stack->size--;
 }
 
-void vector_stack_top(VectorStack *stack, int *x, int *y) {
+void vector_stack_push3(VectorStack *stack, int x, int y, int z) {
+    stack->coords[stack->size][0] = x;
+    stack->coords[stack->size][1] = y;
+    stack->coords[stack->size][2] = z;
+    
+    stack->size++;
+}
+
+void vector_stack_pop3(VectorStack *stack, int *x, int *y, int *z) {
     *x = stack->coords[stack->size - 1][0];
     *y = stack->coords[stack->size - 1][1];
+    *z = stack->coords[stack->size - 1][2];
+    
+    stack->size--;
+}
+
+void vector_stack_top2(VectorStack *stack, int *x, int *y) {
+    *x = stack->coords[stack->size - 1][0];
+    *y = stack->coords[stack->size - 1][1];
+}
+
+void vector_stack_top3(VectorStack *stack, int *x, int *y, int *z) {
+    *x = stack->coords[stack->size - 1][0];
+    *y = stack->coords[stack->size - 1][1];
+    *z = stack->coords[stack->size - 1][2];
+}
+
+void create_grid_from_directions(Grid *grid, char directions[DIRECTIONS_MAX_SIZE]) {
+    init_grid(grid);
+    
+    int directions_len = strlen(directions);
+    
+    int current_x = grid->start_x;
+    int current_y = grid->start_y;
+    
+    VectorStack stack;
+    vector_stack_init(&stack);
+    
+    for(int i = 0; i < directions_len; i++) {
+        char instruction = directions[i];
+        
+        if(instruction == 'N') {
+            grid->doors_horizontal[current_y - 1][current_x] = true;
+            current_y--;
+        } else if(instruction == 'S') {
+            grid->doors_horizontal[current_y][current_x] = true;
+            current_y++;
+        } else if(instruction == 'W') {
+            grid->doors_vertical[current_y][current_x - 1] = true;
+            current_x--;
+        } else if(instruction == 'E') {
+            grid->doors_vertical[current_y][current_x] = true;
+            current_x++;
+        } else if(instruction == '(') {
+            vector_stack_push2(&stack, current_x, current_y);
+        } else if(instruction == ')') {
+            vector_stack_pop2(&stack, &current_x, &current_y);
+        } else if(instruction == '|') {
+            vector_stack_top2(&stack, &current_x, &current_y);
+        }
+    }
+}
+
+int get_furthest_dist(Grid *grid) {
+    
+    VectorStack stack;
+    vector_stack_init(&stack);
+    vector_stack_push3(&stack, grid->start_x, grid->start_y, 0);
+    
+    bool visited_rooms[GRID_SIZE][GRID_SIZE] = {false};
+    int furthest_room = 0;
+    
+    int x;
+    int y;
+    int current_dist;
+    
+    while(stack.size != 0) {
+        
+        vector_stack_pop3(&stack, &x, &y, &current_dist);
+        
+        //printf("Visiting room (%d, %d) - distance %d\n", x, y, current_dist);
+        
+        visited_rooms[y][x] = true;
+        
+        // West
+        if(x > 0 && grid->doors_vertical[y][x - 1] && !visited_rooms[y][x - 1]) {
+            vector_stack_push3(&stack, x - 1, y, current_dist+1);
+        }
+        
+        // East
+        if(x < GRID_SIZE - 1 && grid->doors_vertical[y][x] && !visited_rooms[y][x + 1]) {
+            vector_stack_push3(&stack, x + 1, y, current_dist+1);
+        }
+        
+        // North
+        if(y > 0 && grid->doors_horizontal[y - 1][x] && !visited_rooms[y - 1][x]) {
+            vector_stack_push3(&stack, x, y - 1, current_dist+1);
+        }
+        
+        // South
+        if(y < GRID_SIZE - 1 && grid->doors_horizontal[y][x] && !visited_rooms[y + 1][x]) {
+            vector_stack_push3(&stack, x, y + 1, current_dist+1);
+        }
+        
+        if(current_dist > furthest_room) {
+            furthest_room = current_dist;
+        }
+        
+    }
+    
+    return furthest_room;
 }
 
 int main() {
@@ -192,48 +300,12 @@ int main() {
     read_directions(directions, "input.txt");
     
     Grid grid;
-    init_grid(&grid);
-    
-    //print_grid(&grid);
-    //printf("\n");
-    
-    int directions_len = strlen(directions);
-    
-    int current_x = grid.start_x;
-    int current_y = grid.start_y;
-    
-    VectorStack stack;
-    vector_stack_init(&stack);
-    
-    for(int i = 0; i < directions_len; i++) {
-        char instruction = directions[i];
-        //printf("Instruction: %c\n", instruction);
-    
-        if(instruction == 'N') {
-            grid.doors_horizontal[current_y - 1][current_x] = true;
-            current_y--;
-        } else if(instruction == 'S') {
-            grid.doors_horizontal[current_y][current_x] = true;
-            current_y++;
-        } else if(instruction == 'W') {
-            grid.doors_vertical[current_y][current_x - 1] = true;
-            current_x--;
-        } else if(instruction == 'E') {
-            grid.doors_vertical[current_y][current_x] = true;
-            current_x++;
-        } else if(instruction == '(') {
-            vector_stack_push(&stack, current_x, current_y);
-        } else if(instruction == ')') {
-            vector_stack_pop(&stack, &current_x, &current_y);
-        } else if(instruction == '|') {
-            vector_stack_top(&stack, &current_x, &current_y);
-        }
-    
-        //print_grid(&grid);
-        //printf("\n");
-    }
-    
+    create_grid_from_directions(&grid, directions);
     print_grid(&grid);
     
+    int dist = get_furthest_dist(&grid);
+    
+    printf("Furthest Distance: %d\n", dist);
+        
     return 0;
 }
