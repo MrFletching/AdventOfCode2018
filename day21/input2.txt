@@ -1,0 +1,31 @@
+    r3 = 123
+L1: r3 = r3 & 456
+    if r3 == 72 then r3 = 1 else r3 = 0
+    ip = r3 + ip
+    goto L1
+    r3 = 0
+L6: r1 = r3 | 65536
+    r3 = 10373714
+L5: r5 = r1 & 255
+    r3 = r3 + r5
+    r3 = r3 & 16777215
+    r3 = r3 * 65899
+    r3 = r3 & 16777215
+    if 256 > r1 then r5 = 1 else r5 = 0
+    ip = r5 + ip
+    ip = ip + 1
+    goto L2
+    r5 = 0
+L4: r4 = r5 + 1
+    r4 = r4 * 256
+    if r4 > r1 then r4 = 1 else r4 = 0
+    ip = r4 + ip
+    ip = ip + 1
+    goto L3
+    r5 = r5 + 1
+    goto L4
+L3: r1 = r5
+    goto L5
+L2: if r3 == r0 then r5 = 1 else r5 = 0
+    ip = r5 + ip
+    goto L6
